@@ -104,10 +104,12 @@ final class AudioBlockMeter {
     }
 
     private func firstChannel(of sampleBuffer: CMSampleBuffer, asbd: AudioStreamBasicDescription) -> [Float] {
+        // 2回の呼び出しで flags を揃える（必要なサイズが flags で変わりうるため）
+        let flags = UInt32(kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment)
         var sizeNeeded = 0
         CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(
             sampleBuffer, bufferListSizeNeededOut: &sizeNeeded, bufferListOut: nil, bufferListSize: 0,
-            blockBufferAllocator: nil, blockBufferMemoryAllocator: nil, flags: 0, blockBufferOut: nil)
+            blockBufferAllocator: nil, blockBufferMemoryAllocator: nil, flags: flags, blockBufferOut: nil)
         guard sizeNeeded > 0 else { return [] }
 
         let raw = UnsafeMutableRawPointer.allocate(byteCount: sizeNeeded, alignment: MemoryLayout<AudioBufferList>.alignment)
@@ -117,7 +119,7 @@ final class AudioBlockMeter {
         let status = CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(
             sampleBuffer, bufferListSizeNeededOut: nil, bufferListOut: list, bufferListSize: sizeNeeded,
             blockBufferAllocator: nil, blockBufferMemoryAllocator: nil,
-            flags: kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment, blockBufferOut: &blockBuffer)
+            flags: flags, blockBufferOut: &blockBuffer)
         guard status == noErr else { return [] }
 
         return withExtendedLifetime(blockBuffer) {

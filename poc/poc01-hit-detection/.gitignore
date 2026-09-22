@@ -1,0 +1,4 @@
+# swift test の生成物
+.build/
+.swiftpm/
+Package.resolved

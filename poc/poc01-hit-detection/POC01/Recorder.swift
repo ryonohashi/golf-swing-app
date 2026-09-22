@@ -31,7 +31,11 @@ final class Recorder: NSObject, ObservableObject {
     private let audioMeter: AudioBlockMeter
     private let motionMeter: FrameMotionMeter
     private let roiCells: [Int]
-    private let systemVersion = UIDevice.current.systemVersion
+    /// UIDevice はメインアクター隔離なので、キャプチャキューからも読める ProcessInfo で取る
+    private let systemVersion: String = {
+        let v = ProcessInfo.processInfo.operatingSystemVersion
+        return "\(v.majorVersion).\(v.minorVersion).\(v.patchVersion)"
+    }()
     private var videoFormat = ""
     private var thermalObserver: NSObjectProtocol?
 
@@ -53,6 +57,8 @@ final class Recorder: NSObject, ObservableObject {
     private var uiMotionPeak = 0.0
 
     override init() {
+        // super.init() 前に self.config を読まないよう、同じ値をローカルで持つ
+        let config = DetectionConfig.default
         audioMeter = AudioBlockMeter(blockSeconds: config.audioBlockSeconds, cutoffHz: config.highPassCutoffHz)
         motionMeter = FrameMotionMeter(config: config)
         roiCells = config.roiCells()
@@ -252,7 +258,8 @@ final class Recorder: NSObject, ObservableObject {
         videoInput.expectsMediaDataInRealTime = true
         writer.add(videoInput)
 
-        if let settings = audioOutput.recommendedAudioSettingsForAssetWriter(writingTo: .mov) {
+        // 戻り値は [AnyHashable: Any]? なので、AVAssetWriterInput が受け取る形に直す
+        if let settings = audioOutput.recommendedAudioSettingsForAssetWriter(writingTo: .mov) as? [String: Any] {
             let audioInput = AVAssetWriterInput(mediaType: .audio, outputSettings: settings)
             audioInput.expectsMediaDataInRealTime = true
             if writer.canAdd(audioInput) {
@@ -310,7 +317,8 @@ final class Recorder: NSObject, ObservableObject {
 
         if let cells {
             log.motion(t: t, processingMs: processingMs, cells: cells)
-            handle(detector.addMotion(t: t, cellRatios: cells))
+            // replay.py はCSVの丸めた値で判定するので、アプリ内の判定も同じ値で行い、結果を一致させる
+            handle(detector.addMotion(t: logged(t, 4), cellRatios: cells.map { logged($0, 4) }))
         }
     }
 
@@ -331,7 +339,8 @@ final class Recorder: NSObject, ObservableObject {
         for block in blocks {
             let t = block.t - originSeconds
             log.audio(t: t, block: block)
-            handle(detector.addAudio(t: t, peakDb: block.peakDb, highPassPeakDb: block.highPassPeakDb))
+            handle(detector.addAudio(
+                t: logged(t, 4), peakDb: logged(block.peakDb, 2), highPassPeakDb: logged(block.highPassPeakDb, 2)))
         }
     }
 
@@ -369,6 +378,11 @@ final class Recorder: NSObject, ObservableObject {
             self.audioLevelDb = audio
             self.motionRatio = motion
         }
+    }
+
+    /// SessionLog がCSVに書くのと同じ桁に丸めた値
+    private func logged(_ value: Double, _ digits: Int) -> Double {
+        Double(String(format: "%.\(digits)f", value)) ?? value
     }
 
     private static func machineName() -> String {

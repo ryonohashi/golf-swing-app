@@ -9,8 +9,10 @@
 | `POC01/DetectionConfig.swift` | 暫定値。定数はここにだけ置く |
 | `POC01/HitDetector.swift` | 判定ロジック |
 | `tools/replay.py` | ログの再解析・採点・総当たり（Python 3.10 以上、標準ライブラリのみ） |
+| `tools/make_fixture.py` | Swift と Python の判定を突き合わせるフィクスチャを作る |
+| `Package.swift` / `Tests/` | 判定ロジックだけを `swift test` で確かめるためのパッケージ（アプリのビルドには使わない） |
 
-判定ロジックは `HitDetector.swift` と `tools/replay.py` の2か所にある。片方を変えたらもう片方も合わせる。
+判定ロジックは `HitDetector.swift` と `tools/replay.py` の2か所にある。片方を変えたらもう片方も合わせ、[6章](#6-判定ロジックのテスト)のテストを両方通す。
 
 ## 1. ビルド（Mac）
 
@@ -94,9 +96,38 @@ python replay.py <セッションフォルダ> \
 - 動き開始からインパクト音までの秒数
 - 1ショットあたりの音の立ち上がり数と、その間隔
 
-テスト:
+## 6. 判定ロジックのテスト
+
+### Python
 
 ```sh
 cd poc/poc01-hit-detection/tools
 python -m unittest test_replay.py
 ```
+
+### Swift（Mac）
+
+Xcode のプロジェクトを作らなくても、Xcode（またはコマンドラインツール）が入っていれば実行できる。
+
+```sh
+cd poc/poc01-hit-detection
+swift test
+```
+
+`Package.swift` は `POC01/` のうち UIKit や AVFoundation に依存しない `DetectionConfig.swift` と `HitDetector.swift` だけを `HitDetectionCore` としてビルドする。ファイルは `POC01/` に置いたままで、アプリ（`project.yml`）の構成は変わらない。
+
+| テスト | 中身 |
+|---|---|
+| `HitDetectorTests` | `test_replay.py` の JudgeTest と同じケース。加えて、時間窓が閉じた時点で実打を出すこと、計測終了時に閉じていない区間も判定すること |
+| `FixtureTests` | `Fixtures/*.json` の入力を時刻順に `HitDetector` へ流し、音のピーク・動きの区間・実打が `replay.py` の結果と一致するか（許容差 1e-6） |
+
+### フィクスチャの作り直し
+
+判定ロジックか `test_replay.py` の `Scenario` を変えたら作り直し、`swift test` を通す。
+
+```sh
+cd poc/poc01-hit-detection/tools
+python make_fixture.py   # Tests/HitDetectionCoreTests/Fixtures/*.json を書き直す
+```
+
+ケースを足すときは `make_fixture.py` の `fixtures()` に追加する。ファイルを小さく保つため、セルの分割は 2×2 に粗くし、長さは数秒にしている。
