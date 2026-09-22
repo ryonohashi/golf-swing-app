@@ -1,0 +1,11 @@
+# Xcode（プロジェクトは poc/*/project.yml から XcodeGen で生成する）
+*.xcodeproj/
+xcuserdata/
+DerivedData/
+.DS_Store
+
+# Python
+__pycache__/
+
+# 計測データ（動画を含み大きいのでリポジトリに入れない）
+sessions/

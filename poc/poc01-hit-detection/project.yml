@@ -1,0 +1,34 @@
+# XcodeGen の定義。Mac で `xcodegen generate` を実行すると POC01HitDetection.xcodeproj ができる。
+name: POC01HitDetection
+options:
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    # 実機で動かすには Xcode の Signing & Capabilities で Team を選ぶ
+    DEVELOPMENT_TEAM: ""
+targets:
+  POC01HitDetection:
+    type: application
+    platform: iOS
+    sources:
+      - POC01
+    info:
+      path: POC01/Info.plist
+      properties:
+        CFBundleDisplayName: POC01
+        NSCameraUsageDescription: スイング動作の検出と参照動画の録画に使います。
+        NSMicrophoneUsageDescription: インパクト音の検出と参照動画の録音に使います。
+        # ログを「ファイル」アプリと Finder から取り出せるようにする
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.golfswing.poc01
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
