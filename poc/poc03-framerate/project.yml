@@ -1,0 +1,39 @@
+# XcodeGen の定義。Mac で `xcodegen generate` を実行すると POC03Framerate.xcodeproj ができる。
+name: POC03Framerate
+options:
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    # 実機で動かすには Xcode の Signing & Capabilities で Team を選ぶ
+    DEVELOPMENT_TEAM: ""
+targets:
+  POC03Framerate:
+    type: application
+    platform: iOS
+    sources:
+      - POC03
+      # 実機と同じ負荷をかけるため、POC-01 の動き検出をそのまま使う（コピーも変更もしない）
+      - path: ../poc01-hit-detection/POC01/FrameMotionMeter.swift
+        group: POC01Shared
+      - path: ../poc01-hit-detection/POC01/DetectionConfig.swift
+        group: POC01Shared
+    info:
+      path: POC03/Info.plist
+      properties:
+        CFBundleDisplayName: POC03
+        NSCameraUsageDescription: 発熱と電池消費を測るための録画に使います。
+        NSMicrophoneUsageDescription: 録画に音声を含めるために使います。
+        # ログを「ファイル」アプリと Finder から取り出せるようにする
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.golfswing.poc03
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
