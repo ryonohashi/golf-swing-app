@@ -77,6 +77,8 @@
 | `docs/spec-ui.md` | UI仕様 | 画面を作る時 |
 | `docs/poc/` | POCの目的と合否基準 | Phase 0 |
 | `docs/design/penpot/` | Penpotの画面モックの書き出し（画面の見た目の正） | 画面を作る時 |
+| `app/README.md` | 製品アプリ（SwiftUI）の構成、モックで代替している部分、モックとの差異 | アプリのコードを触る時 |
+| `poc/*/README.md` | 各POCの計測アプリのビルド・計測・解析手順 | Phase 0 |
 
 ## 開発順
 

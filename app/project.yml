@@ -1,0 +1,36 @@
+# XcodeGen の定義。Mac で `xcodegen generate` を実行すると SwingNote.xcodeproj ができる。
+name: SwingNote
+options:
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    # 実機で動かすには Xcode の Signing & Capabilities で Team を選ぶ
+    DEVELOPMENT_TEAM: ""
+targets:
+  SwingNote:
+    type: application
+    platform: iOS
+    sources:
+      - SwingNote
+    info:
+      path: SwingNote/Info.plist
+      properties:
+        CFBundleDisplayName: SwingNote
+        NSCameraUsageDescription: 打った球を1球ずつ動画に残すために使います。
+        NSMicrophoneUsageDescription: 打球音を聞き分けて、打った球だけを保存するために使います。
+        NSPhotoLibraryAddUsageDescription: 選んだスイングの動画をカメラロールに書き出すために使います。
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        # 撮影画面は縦固定。比較画面だけ OrientationLock で横向きを許可する
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.golfswing.swingnote
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_PREVIEWS: YES
