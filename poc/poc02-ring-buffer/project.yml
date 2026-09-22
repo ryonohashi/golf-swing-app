@@ -1,0 +1,39 @@
+# XcodeGen の定義。Mac で `xcodegen generate` を実行すると POC02RingBuffer.xcodeproj ができる。
+name: POC02RingBuffer
+options:
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    # 実機で動かすには Xcode の Signing & Capabilities で Team を選ぶ
+    DEVELOPMENT_TEAM: ""
+targets:
+  POC02RingBuffer:
+    type: application
+    platform: iOS
+    sources:
+      - POC02
+      # 実打の判定は POC-01 のファイルをそのまま使う（コピーも変更もしない）
+      - path: ../poc01-hit-detection/POC01/HitDetector.swift
+      - path: ../poc01-hit-detection/POC01/DetectionConfig.swift
+      - path: ../poc01-hit-detection/POC01/AudioBlockMeter.swift
+      - path: ../poc01-hit-detection/POC01/FrameMotionMeter.swift
+    info:
+      path: POC02/Info.plist
+      properties:
+        CFBundleDisplayName: POC02
+        NSCameraUsageDescription: スイングの動画をリングバッファに撮り続け、1球ずつのクリップを作るのに使います。
+        NSMicrophoneUsageDescription: インパクト音の検出とクリップの録音に使います。
+        # ログとクリップを「ファイル」アプリと Finder から取り出せるようにする
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.golfswing.poc02
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
